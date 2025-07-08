@@ -1,0 +1,92 @@
+name: Run Playwright Tests on stage
+
+on:
+  # triggered from the different repo
+  repository_dispatch:
+    types: [test-stage]
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        required: true
+
+jobs:
+  playwright-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+          submodules: true
+
+      - name: Spin up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: use cached node modules
+        uses: actions/cache/restore@v4
+        id: restore-cache
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+            node_modules
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: install node dependencies
+        if: steps.restore-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: install browsers
+        if: steps.restore-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chrome --with-deps
+
+      - name: save cache
+        if: steps.restore-cache.outputs.cache != 'true'
+        uses: actions/cache/save@v4
+        id: save-cache
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+            node_modules
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Set env
+        run: |
+          echo "BACK_API=${{ secrets.BACK_API }}" >> .env
+          echo "STAGE_URL=${{ secrets.STAGE_URL }}" >> .env
+
+      - name: Run Playwright stage B2B Tests
+        id: pw_test
+        run: npm run stage
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+
+  SlackNotification:
+    needs: playwright-tests
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: send notification
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "* ${{ needs.playwright-tests.result == 'success' && ':white_check_mark:' || ':x:' }} *${{ needs.playwright-tests.result }}* \n${{ github.event.pull_request.html_url || github.event.head_commit.url }}\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

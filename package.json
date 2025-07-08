@@ -1,0 +1,24 @@
+{
+  "name": "playwright_tests",
+  "version": "1.0.0",
+  "scripts": {
+    "setup_stage": "npx playwright test --project=setup_stage",
+    "api": "npx playwright test --project=stage -g @API",
+    "stage": "npx playwright test --project=stage",
+    "mob_stage": "npx playwright test --project=mob_stage",
+    "format": "prettier --write ."
+  },
+  "author": "Yevhenii Silkov silkov.evgen@gmail.com",
+  "description": "simple playwright test framework",
+  "dependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.8.4",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.0",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-typescript": "^0.23.2",
+    "yaml": "^2.5.1"
+  }
+}

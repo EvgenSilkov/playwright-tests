@@ -1,0 +1,9 @@
+- Favorite products:
+    - user CAN add product to favorites from a list view:
+        automated: file://./tests/favorites.test.ts#15
+    - user CAN add product to favorites from a details view:
+        automated: file://./tests/product_details.test.ts#98
+    - user CAN remove product to favorites from a details view:
+        automated: file://../tests/product_details.test.ts#101
+    - user CAN remove product from favorites list:
+        automated: file://./tests/favorites.test.ts#29

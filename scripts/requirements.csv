@@ -1,0 +1,5 @@
+Favorite products
+	user CAN add product to favorites from a list view		automated
+	user CAN add product to favorites from a details view		automated
+	user CAN remove product to favorites from a details view		automated
+	user CAN remove product from favorites list		automated

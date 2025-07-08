@@ -1,0 +1,5 @@
+## developers put types in a "clean" files, so they could be imported with a simple import statements
+[submodule "shared"]
+	path = shared
+	url = git@github.com:super-puper-project/shared.git
+	branch = stage
